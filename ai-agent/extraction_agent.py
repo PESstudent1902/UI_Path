@@ -27,7 +27,12 @@ MODEL_RESOLVED = False
 def configure_gemini_client() -> bool:
     """Configures the Gemini API client dynamically from environment variables."""
     global GEMINI_MODEL_NAME, MODEL_RESOLVED
-    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    api_key = os.environ.get("GEMINI_API_KEY", "")
+    if not api_key.strip():
+        api_key = os.environ.get("GeminiAPI", "")
+    if not api_key.strip():
+        api_key = os.environ.get("GEMINI_API", "")
+    api_key = api_key.strip()
     if not api_key:
         return False
     
