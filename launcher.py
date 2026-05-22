@@ -16,7 +16,10 @@ def main():
     print()
     
     # Get current project directory
-    project_dir = os.path.dirname(os.path.abspath(__file__))
+    if getattr(sys, 'frozen', False):
+        project_dir = os.path.dirname(os.path.abspath(sys.executable))
+    else:
+        project_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(project_dir)
     
     # Path to virtual env python
