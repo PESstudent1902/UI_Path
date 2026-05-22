@@ -9,6 +9,10 @@ from dotenv import load_dotenv
 # Load Environment Config
 load_dotenv()
 
+# Set up path imports for serverless environments (like Vercel)
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 # Import Local Modules
 from extraction_agent import extract_techpack
 from costing_agent import process_costing
