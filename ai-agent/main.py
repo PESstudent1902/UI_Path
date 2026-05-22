@@ -69,6 +69,7 @@ class CostingResponse(BaseModel):
     status: str
     excel_filepath: str
     costing_sheet: Dict[str, Any]
+    excel_base64: Optional[str] = None
 
 # ----------------- API ENDPOINTS -----------------
 
@@ -76,25 +77,33 @@ class CostingResponse(BaseModel):
 async def upload_file(file: UploadFile = File(...)):
     """
     Convenience endpoint for the UI to upload actual PDFs for parsing.
-    Saves the file to sample-data/ uploads folder.
+    Saves the file to sample-data/ uploads folder, or base64-encodes on Vercel.
     """
     try:
+        file_content = await file.read()
         if os.environ.get("VERCEL"):
-            upload_dir = "/tmp"
+            import base64
+            base64_data = base64.b64encode(file_content).decode("utf-8")
+            data_url = f"data:application/pdf;base64,{base64_data}"
+            return {
+                "status": "SUCCESS", 
+                "filepath": data_url, 
+                "filename": file.filename
+            }
         else:
             upload_dir = os.path.join(
-                os.path.dirname(os.path.dirname(__file__)),
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                 "sample-data"
             )
-        os.makedirs(upload_dir, exist_ok=True)
-        filepath = os.path.join(upload_dir, file.filename)
-        with open(filepath, "wb") as f:
-            f.write(await file.read())
-        return {
-            "status": "SUCCESS", 
-            "filepath": filepath, 
-            "filename": file.filename
-        }
+            os.makedirs(upload_dir, exist_ok=True)
+            filepath = os.path.join(upload_dir, file.filename)
+            with open(filepath, "wb") as f:
+                f.write(file_content)
+            return {
+                "status": "SUCCESS", 
+                "filepath": filepath, 
+                "filename": file.filename
+            }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
 
@@ -108,7 +117,7 @@ async def download_excel(case_id: str):
         output_dir = "/tmp"
     else:
         output_dir = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
             "outputs"
         )
     filepath = os.path.join(output_dir, f"costing_sheet_{case_id}.xlsx")
@@ -172,7 +181,7 @@ async def calculate_costing_endpoint(request: CostingRequest):
             output_dir = "/tmp"
         else:
             output_dir = os.path.join(
-                os.path.dirname(os.path.dirname(__file__)),
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                 "outputs"
             )
         os.makedirs(output_dir, exist_ok=True)
@@ -184,11 +193,21 @@ async def calculate_costing_endpoint(request: CostingRequest):
         generate_costing_excel(costing_sheet, excel_filepath)
         print(f"[{request.case_id}] Costing spreadsheet written successfully: {excel_filepath}")
         
+        # Read Excel file and base64-encode it
+        excel_base64 = None
+        try:
+            with open(excel_filepath, "rb") as ef:
+                import base64
+                excel_base64 = base64.b64encode(ef.read()).decode("utf-8")
+        except Exception as read_err:
+            print(f"[{request.case_id}] Warning: could not read generated Excel for base64: {read_err}")
+            
         return CostingResponse(
             case_id=request.case_id,
             status="SUCCESS",
             excel_filepath=excel_filepath,
-            costing_sheet=costing_sheet
+            costing_sheet=costing_sheet,
+            excel_base64=excel_base64
         )
     except Exception as e:
         print(f"[{request.case_id}] Costing calculation endpoint error: {e}")
@@ -215,7 +234,7 @@ async def get_status():
 
 @app.get("/")
 async def get_index():
-    static_file = os.path.join(os.path.dirname(__file__), "static", "index.html")
+    static_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "index.html")
     if os.path.exists(static_file):
         return FileResponse(static_file)
     api_key = os.environ.get("GEMINI_API_KEY", "")
@@ -231,6 +250,6 @@ async def get_index():
     }
 
 # Mount static folder
-static_dir = os.path.join(os.path.dirname(__file__), "static")
+static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 os.makedirs(static_dir, exist_ok=True)
 app.mount("/static", StaticFiles(directory=static_dir), name="static")

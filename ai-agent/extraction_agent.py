@@ -141,8 +141,20 @@ MOCK_TECH_PACK_DATA = {
 
 
 def download_or_load_pdf(pdf_url: str) -> io.BytesIO:
-    """Downloads PDF from url or loads local path, returns BytesIO."""
-    if pdf_url.startswith("http://") or pdf_url.startswith("https://"):
+    """Downloads PDF from url, decodes base64 data, or loads local path, returns BytesIO."""
+    if pdf_url.startswith("data:application/pdf;base64,"):
+        print("Decoding base64 PDF data URL...")
+        import base64
+        base64_data = pdf_url.split("base64,")[1]
+        decoded_bytes = base64.b64decode(base64_data)
+        return io.BytesIO(decoded_bytes)
+    elif pdf_url.startswith("data:") and ";base64," in pdf_url:
+        print("Decoding general base64 data URL...")
+        import base64
+        base64_data = pdf_url.split(";base64,")[1]
+        decoded_bytes = base64.b64decode(base64_data)
+        return io.BytesIO(decoded_bytes)
+    elif pdf_url.startswith("http://") or pdf_url.startswith("https://"):
         print(f"Downloading PDF from web: {pdf_url}")
         res = requests.get(pdf_url, timeout=30)
         res.raise_for_status()

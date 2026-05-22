@@ -1723,7 +1723,16 @@ Indian Garment Exporters Ltd.
     }
     
     function downloadExcelFile() {
-      window.location.href = `/api/download-excel/${caseId}`;
+      if (costingResult && costingResult.excel_base64) {
+        const link = document.createElement('a');
+        link.href = 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + costingResult.excel_base64;
+        link.download = `costing_sheet_${caseId}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        window.location.href = `/api/download-excel/${caseId}`;
+      }
     }
     
     function simulateEmailSend() {
