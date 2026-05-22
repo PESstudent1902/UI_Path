@@ -1087,7 +1087,7 @@
     // Check server connection on startup
     window.addEventListener('load', async () => {
       try {
-        const res = await fetch('/');
+        const res = await fetch('/api/status');
         const data = await res.json();
         
         const geminiStatus = document.getElementById('gemini-status');

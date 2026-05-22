@@ -199,6 +199,15 @@ async def calculate_costing_endpoint(request: CostingRequest):
 
 # ----------------- UI / STATIC SITES SERVING -----------------
 
+@app.get("/api/status")
+async def get_status():
+    return {
+        "status": "ONLINE",
+        "system": "Garment Tech Pack Case Processing AI backend",
+        "gemini_api_key_configured": len(os.environ.get("GEMINI_API_KEY", "").strip()) > 0
+    }
+
+
 @app.get("/")
 async def get_index():
     static_file = os.path.join(os.path.dirname(__file__), "static", "index.html")
