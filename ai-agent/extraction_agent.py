@@ -5,6 +5,20 @@ import requests
 import pdfplumber
 import google.generativeai as genai
 from typing import Dict, Any, List
+from dotenv import load_dotenv
+
+# Load .env file robustly from script directory or parent directory
+script_dir = os.path.dirname(os.path.abspath(__file__))
+env_paths = [
+    os.path.join(script_dir, ".env"),
+    os.path.join(os.path.dirname(script_dir), ".env")
+]
+for path in env_paths:
+    if os.path.exists(path):
+        load_dotenv(dotenv_path=path)
+        break
+else:
+    load_dotenv()
 
 # Initialize Gemini Client if Key is Present
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")

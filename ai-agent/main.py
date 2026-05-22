@@ -6,8 +6,18 @@ from pydantic import BaseModel, Field
 from typing import Dict, Any, List, Optional
 from dotenv import load_dotenv
 
-# Load Environment Config
-load_dotenv()
+# Load .env file robustly from script directory or parent directory
+script_dir = os.path.dirname(os.path.abspath(__file__))
+env_paths = [
+    os.path.join(script_dir, ".env"),
+    os.path.join(os.path.dirname(script_dir), ".env")
+]
+for path in env_paths:
+    if os.path.exists(path):
+        load_dotenv(dotenv_path=path)
+        break
+else:
+    load_dotenv()
 
 # Set up path imports for serverless environments (like Vercel)
 import sys
