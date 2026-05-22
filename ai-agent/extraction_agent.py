@@ -21,38 +21,44 @@ else:
     load_dotenv()
 
 # Initialize Gemini Client if Key is Present
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-HAS_API_KEY = len(GEMINI_API_KEY.strip()) > 0
 GEMINI_MODEL_NAME = "gemini-1.5-flash"  # Default fallback
+MODEL_RESOLVED = False
 
-if HAS_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
-    try:
-        # Determine the best available model from the API
-        available = [m.name for m in genai.list_models()]
-        preferred_models = [
-            "models/gemini-2.5-flash",
-            "models/gemini-2.0-flash",
-            "models/gemini-3.5-flash",
-            "models/gemini-1.5-flash",
-            "models/gemini-flash-latest",
-            "models/gemini-pro-latest"
-        ]
-        for pref in preferred_models:
-            if pref in available or pref.replace("models/", "") in available:
-                GEMINI_MODEL_NAME = pref.replace("models/", "")
-                break
-        else:
-            # Look for any model containing 'flash'
-            for m in available:
-                if "flash" in m:
-                    GEMINI_MODEL_NAME = m.replace("models/", "")
+def configure_gemini_client() -> bool:
+    """Configures the Gemini API client dynamically from environment variables."""
+    global GEMINI_MODEL_NAME, MODEL_RESOLVED
+    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    if not api_key:
+        return False
+    
+    genai.configure(api_key=api_key)
+    
+    if not MODEL_RESOLVED:
+        try:
+            available = [m.name for m in genai.list_models()]
+            preferred_models = [
+                "models/gemini-2.5-flash",
+                "models/gemini-2.0-flash",
+                "models/gemini-3.5-flash",
+                "models/gemini-1.5-flash",
+                "models/gemini-flash-latest",
+                "models/gemini-pro-latest"
+            ]
+            for pref in preferred_models:
+                if pref in available or pref.replace("models/", "") in available:
+                    GEMINI_MODEL_NAME = pref.replace("models/", "")
                     break
-        print(f"[Gemini Client] Configured and matched model name: {GEMINI_MODEL_NAME}")
-    except Exception as e:
-        print(f"[Gemini Client Warning] Failed to dynamically list/query models: {e}. Defaulting to gemini-1.5-flash.")
-else:
-    print("[WARNING] GEMINI_API_KEY not found. Running extraction agent in local mockup/fallback mode.")
+            else:
+                for m in available:
+                    if "flash" in m:
+                        GEMINI_MODEL_NAME = m.replace("models/", "")
+                        break
+            MODEL_RESOLVED = True
+            print(f"[Gemini Client] Configured and matched model name: {GEMINI_MODEL_NAME}")
+        except Exception as e:
+            print(f"[Gemini Client Warning] Failed to dynamically query models: {e}. Defaulting to {GEMINI_MODEL_NAME}")
+    return True
+
 
 # High Fidelity Mock Database for testing and fallback when API Key is missing or pdf is mock
 MOCK_TECH_PACK_DATA = {
@@ -260,7 +266,9 @@ def extract_techpack(pdf_url: str) -> Dict[str, Any]:
     is_sample_2 = "sample_techpack_2.pdf" in pdf_url
     is_sample = is_sample_1 or is_sample_2
 
-    if not HAS_API_KEY and not is_sample:
+    has_api_key = configure_gemini_client()
+
+    if not has_api_key and not is_sample:
         raise ValueError("Gemini API key is not configured. Custom PDF extraction is unavailable in mock simulation mode.")
 
     try:
@@ -280,7 +288,7 @@ def extract_techpack(pdf_url: str) -> Dict[str, Any]:
     is_mock_polo = "Classic Polo" in raw_text or "Polo Shirt" in raw_text or "P001" in raw_text
     is_mock_tee = "Crewneck Tee" in raw_text or "T002" in raw_text or "T-shirt" in raw_text
 
-    if not HAS_API_KEY:
+    if not has_api_key:
         print("[MOCK MODE] Returning high-fidelity mock extraction data.")
         if is_mock_tee:
             return MOCK_TECH_PACK_DATA["basic_tee"]
