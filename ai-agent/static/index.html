@@ -740,7 +740,7 @@
         <div class="subtitle">Select a pre-compiled tech pack PDF representing standard and exception cases to ingest into the Maestro queue, or upload a custom file.</div>
         
         <div class="sample-grid">
-          <div class="sample-card selected" id="sample-polo-card" onclick="selectSample('polo')">
+          <div class="sample-card" id="sample-polo-card" onclick="selectSample('polo')">
             <div>
               <div class="sample-title">Classic Polo Shirt (Clean)</div>
               <div class="sample-desc">Complete measurements and BOM spec. Evaluates to high AI confidence, advancing straight to standard Human Review.</div>
@@ -1075,7 +1075,7 @@
   <script>
     // State management
     let activeStep = 0;
-    let selectedSample = 'polo';
+    let selectedSample = null;
     let uploadedFilepath = null;
     let uploadedFilename = null;
     let caseId = "";
@@ -1135,6 +1135,7 @@
           // Deselect sample cards
           document.getElementById('sample-polo-card').classList.remove('selected');
           document.getElementById('sample-tee-card').classList.remove('selected');
+          selectedSample = null;
         }
       } catch (err) {
         console.error("Upload error:", err);
@@ -1152,6 +1153,12 @@
     }
     
     function triggerIngestion() {
+      // Validate that we have a file or sample selected
+      if (!selectedSample && !uploadedFilepath) {
+        alert("Please select a sample case study or upload a custom PDF document to ingest.");
+        return;
+      }
+      
       // Transition to loading pane
       document.getElementById('card-stage-0').classList.remove('active');
       const loadPane = document.getElementById('card-loading');

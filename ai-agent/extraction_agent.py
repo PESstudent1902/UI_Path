@@ -238,19 +238,31 @@ def extract_techpack(pdf_url: str) -> Dict[str, Any]:
     """
     Main extraction pipeline.
     Reads PDF (url or local), extracts text, invokes Gemini, scores confidence.
-    If Gemini API key is missing or fails, falls back to a high-fidelity mock parser.
     """
+    if not pdf_url or not pdf_url.strip():
+        raise ValueError("PDF URL or file path cannot be empty")
+
+    is_sample_1 = "sample_techpack_1.pdf" in pdf_url
+    is_sample_2 = "sample_techpack_2.pdf" in pdf_url
+    is_sample = is_sample_1 or is_sample_2
+
+    if not HAS_API_KEY and not is_sample:
+        raise ValueError("Gemini API key is not configured. Custom PDF extraction is unavailable in mock simulation mode.")
+
     try:
         # Step 1: Read PDF
         pdf_file = download_or_load_pdf(pdf_url)
         raw_text = parse_pdf_text(pdf_file)
     except Exception as e:
-        print(f"Failed to read/parse PDF {pdf_url}: {e}. Falling back to default mock polo.")
-        # Fallback to local mock files if reading files fails completely
-        return MOCK_TECH_PACK_DATA["classic_polo"]
+        print(f"Failed to read/parse PDF {pdf_url}: {e}")
+        if is_sample:
+            print("Falling back to local mock data for sample files.")
+            if is_sample_2:
+                return MOCK_TECH_PACK_DATA["basic_tee"]
+            return MOCK_TECH_PACK_DATA["classic_polo"]
+        raise RuntimeError(f"Failed to read or parse PDF file: {str(e)}")
 
     # Step 2: Route based on API Key availability or local test flags
-    # We also check if text contains markers for classic_polo or basic_tee to match mock data exactly
     is_mock_polo = "Classic Polo" in raw_text or "Polo Shirt" in raw_text or "P001" in raw_text
     is_mock_tee = "Crewneck Tee" in raw_text or "T002" in raw_text or "T-shirt" in raw_text
 
