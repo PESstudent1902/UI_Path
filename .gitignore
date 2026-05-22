@@ -1,0 +1,28 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+.venv/
+ENV/
+env/
+
+# IDE / Editor folders
+.vscode/
+.idea/
+
+# Excel outputs
+outputs/*.xlsx
+outputs/costing_sheet_*.xlsx
+
+# Environment config
+.env
+.env.local
+
+# PyInstaller / Build outputs
+build/
+dist/
+*.spec
+launcher.exe

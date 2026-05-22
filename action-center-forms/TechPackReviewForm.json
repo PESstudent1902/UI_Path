@@ -1,0 +1,160 @@
+{
+  "formName": "TechPackReview",
+  "formVersion": "1.0",
+  "layout": {
+    "title": "Tech Pack Review Form",
+    "description": "Verify extracted specifications and review clarification questions for the buyer before proceeding to costing."
+  },
+  "fields": [
+    {
+      "name": "case_id",
+      "type": "text",
+      "label": "Case ID",
+      "readonly": true
+    },
+    {
+      "name": "buyer_name",
+      "type": "text",
+      "label": "Buyer Name",
+      "readonly": true
+    },
+    {
+      "name": "buyer_email",
+      "type": "text",
+      "label": "Buyer Email Address",
+      "readonly": true
+    },
+    {
+      "name": "confidence_score",
+      "type": "number",
+      "label": "AI Confidence Score",
+      "readonly": true,
+      "format": "percentage"
+    },
+    {
+      "name": "pdf_link",
+      "type": "hyperlink",
+      "label": "Original Tech Pack URL",
+      "readonly": true
+    },
+    {
+      "name": "style_name",
+      "type": "text",
+      "label": "Style Name",
+      "required": true,
+      "validation": {
+        "minLength": 3
+      }
+    },
+    {
+      "name": "style_number",
+      "type": "text",
+      "label": "Style Number",
+      "required": true
+    },
+    {
+      "name": "garment_type",
+      "type": "dropdown",
+      "label": "Garment Type",
+      "options": ["T-shirt", "Polo Shirt", "Shirt", "Dress", "Jacket", "Pants"],
+      "required": true
+    },
+    {
+      "name": "fabric_composition",
+      "type": "text",
+      "label": "Fabric Composition",
+      "required": true
+    },
+    {
+      "name": "fabric_gsm",
+      "type": "number",
+      "label": "Fabric GSM (Grams per Square Meter)",
+      "required": false
+    },
+    {
+      "name": "fabric_width",
+      "type": "number",
+      "label": "Fabric Width (inches)",
+      "required": true
+    },
+    {
+      "name": "color_variants",
+      "type": "multiselect",
+      "label": "Color Variants",
+      "options": []
+    },
+    {
+      "name": "size_range",
+      "type": "text",
+      "label": "Size Range",
+      "required": true
+    },
+    {
+      "name": "measurements",
+      "type": "datatable",
+      "label": "Measurements Table",
+      "columns": [
+        {"name": "size", "type": "text", "label": "Size"},
+        {"name": "chest", "type": "number", "label": "Chest Width (in)"},
+        {"name": "length", "type": "number", "label": "Body Length (in)"},
+        {"name": "sleeve", "type": "number", "label": "Sleeve Length (in)"},
+        {"name": "shoulder", "type": "number", "label": "Shoulder Width (in)"}
+      ],
+      "editable": true
+    },
+    {
+      "name": "bom",
+      "type": "datatable",
+      "label": "Bill of Materials (BOM)",
+      "columns": [
+        {"name": "item", "type": "dropdown", "label": "Item Name", "options": ["Main fabric - Cotton Pique", "Main fabric - Cotton Jersey", "Main fabric - Poly Cotton Blend", "Rib fabric - collar/cuffs", "Interlining - collar", "Thread - main", "Buttons - 3 hole", "Care label", "Size label", "Polybag packaging"]},
+        {"name": "unit", "type": "text", "label": "Unit (e.g. yards, meters, pieces)"},
+        {"name": "consumption_per_piece", "type": "number", "label": "Consumption per piece"}
+      ],
+      "editable": true,
+      "allowAddRow": true,
+      "allowDeleteRow": true
+    },
+    {
+      "name": "seam_type",
+      "type": "text",
+      "label": "Seam Type"
+    },
+    {
+      "name": "stitch_density",
+      "type": "text",
+      "label": "Stitch Density"
+    },
+    {
+      "name": "special_processes",
+      "type": "textarea",
+      "label": "Special Processes"
+    },
+    {
+      "name": "clarification_questions",
+      "type": "textarea",
+      "label": "Questions for Buyer (RFI)",
+      "rows": 5
+    }
+  ],
+  "actions": [
+    {
+      "name": "approve",
+      "label": "Approve and Continue",
+      "style": "success",
+      "outcome": "APPROVED"
+    },
+    {
+      "name": "reject",
+      "label": "Reject and Send RFI",
+      "style": "danger",
+      "outcome": "REJECTED"
+    },
+    {
+      "name": "draft",
+      "label": "Save as Draft",
+      "style": "secondary",
+      "outcome": "DRAFT"
+    }
+  ]
+}

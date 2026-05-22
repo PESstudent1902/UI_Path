@@ -1,0 +1,26 @@
+{
+  "pricing_database": {
+    "Main fabric - Cotton Pique": 4.50,
+    "Main fabric - Cotton Jersey": 3.80,
+    "Main fabric - Poly Cotton Blend": 3.00,
+    "Rib fabric - collar/cuffs": 3.20,
+    "Interlining - collar": 1.80,
+    "Thread - main": 0.02,
+    "Buttons - 3 hole": 0.05,
+    "Buttons - standard": 0.04,
+    "Care label": 0.08,
+    "Size label": 0.06,
+    "Main brand label": 0.12,
+    "Hangtag": 0.10,
+    "Polybag packaging": 0.15,
+    "Carton packaging": 0.25
+  },
+  "cmt_rates": {
+    "T-shirt": 2.50,
+    "Polo Shirt": 3.20,
+    "Shirt": 4.50,
+    "Dress": 6.00,
+    "Jacket": 12.00,
+    "Pants": 5.00
+  }
+}

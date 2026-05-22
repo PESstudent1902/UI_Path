@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UiPath Maestro Case Portal - Tech Pack Processor</title>
+  
+  <!-- Modern Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* Premium CSS Variables Design System */
+    :root {
+      --bg-main: #0B0F19;
+      --bg-card: #161E31;
+      --bg-input: #1F2A45;
+      --border-color: #2D3D60;
+      
+      --color-primary: #6366F1; /* Indigo */
+      --color-primary-glow: rgba(99, 102, 241, 0.15);
+      --color-success: #10B981; /* Mint/Green */
+      --color-success-glow: rgba(16, 185, 129, 0.15);
+      --color-warning: #F59E0B; /* Amber/Yellow */
+      --color-danger: #EF4444; /* Coral/Red */
+      
+      --text-main: #F3F4F6;
+      --text-muted: #9CA3AF;
+      --text-dark: #1F2937;
+      
+      --transition-speed: 0.3s;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+    
+    /* Header Section styling */
+    header {
+      background: rgba(22, 30, 49, 0.7);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.4rem;
+      color: var(--text-main);
+      letter-spacing: -0.5px;
+    }
+    
+    .brand-logo span {
+      background: linear-gradient(135deg, var(--color-primary), #A78BFA);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .logo-badge {
+      background: var(--color-primary-glow);
+      border: 1px solid var(--color-primary);
+      color: #A78BFA;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    
+    .status-panel {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-size: 0.85rem;
+    }
+    
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(31, 42, 69, 0.5);
+      border: 1px solid var(--border-color);
+      padding: 5px 12px;
+      border-radius: 20px;
+    }
+    
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--color-success);
+      box-shadow: 0 0 8px var(--color-success);
+    }
+    
+    /* Layout Framework */
+    .app-container {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      position: relative;
+    }
+    
+    /* Sidebar Steps Navigation */
+    .sidebar {
+      background-color: rgba(22, 30, 49, 0.4);
+      border-right: 1px solid var(--border-color);
+      padding: 2rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    
+    .sidebar-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    
+    .step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: not-allowed;
+      border: 1px solid transparent;
+      transition: all var(--transition-speed) ease;
+    }
+    
+    .step-item.active {
+      background: var(--bg-card);
+      border-color: var(--border-color);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      cursor: default;
+    }
+    
+    .step-item.completed {
+      cursor: pointer;
+    }
+    
+    .step-number {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(31, 42, 69, 0.8);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: all var(--transition-speed) ease;
+    }
+    
+    .step-item.active .step-number {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: white;
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+    }
+    
+    .step-item.completed .step-number {
+      background: var(--color-success-glow);
+      border-color: var(--color-success);
+      color: var(--color-success);
+    }
+    
+    .step-label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: all var(--transition-speed) ease;
+    }
+    
+    .step-item.active .step-label {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+    
+    .step-item.completed .step-label {
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+    
+    /* Main Panel Display */
+    .main-panel {
+      padding: 2rem 3rem;
+      overflow-y: auto;
+      max-height: calc(100vh - 72px);
+    }
+    
+    .stage-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+      max-width: 1000px;
+      margin: 0 auto;
+      display: none;
+    }
+    
+    .stage-card.active {
+      display: block;
+      animation: fadeIn 0.4s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    h2 {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
+      line-height: 1.4;
+    }
+    
+    /* Form & Input Elements */
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+    
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    
+    input, select, textarea {
+      width: 100%;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-main);
+      padding: 10px 14px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 2px var(--color-primary-glow);
+    }
+    
+    input[readonly], textarea[readonly] {
+      background-color: rgba(31, 42, 69, 0.3);
+      cursor: not-allowed;
+      color: var(--text-muted);
+    }
+    
+    /* Buttons Custom Layout */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s ease;
+    }
+    
+    .btn:hover {
+      background-color: #273557;
+      border-color: #3f5485;
+    }
+    
+    .btn-primary {
+      background-color: var(--color-primary);
+      border-color: var(--color-primary);
+    }
+    
+    .btn-primary:hover {
+      background-color: #4F46E5;
+      border-color: #4F46E5;
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+    }
+    
+    .btn-success {
+      background-color: var(--color-success);
+      border-color: var(--color-success);
+    }
+    
+    .btn-success:hover {
+      background-color: #059669;
+      border-color: #059669;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+    }
+    
+    .btn-danger {
+      background-color: var(--color-danger);
+      border-color: var(--color-danger);
+    }
+    
+    .btn-danger:hover {
+      background-color: #DC2626;
+      border-color: #DC2626;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+    }
+    
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none !important;
+      background-color: var(--bg-input) !important;
+      border-color: var(--border-color) !important;
+    }
+    
+    /* Table grids */
+    .table-container {
+      margin: 1.5rem 0;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    
+    th {
+      background-color: rgba(31, 42, 69, 0.6);
+      font-weight: 600;
+      color: var(--text-muted);
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+    
+    tr:last-child td {
+      border-bottom: none;
+    }
+    
+    /* Editable input inside tables */
+    table input {
+      padding: 6px 10px;
+      font-size: 0.8rem;
+    }
+    
+    /* splitscreen layout for review */
+    .splitscreen-container {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 1.5rem;
+      height: 600px;
+    }
+    
+    .pdf-viewer-pane {
+      background-color: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 0.75rem;
+      white-space: pre-wrap;
+      color: #93C5FD;
+      line-height: 1.5;
+    }
+    
+    .form-editor-pane {
+      overflow-y: auto;
+      padding-right: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    /* Dynamic UI widgets */
+    .confidence-gauge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg-input);
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 1.5rem;
+    }
+    
+    .gauge-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.95rem;
+      position: relative;
+    }
+    
+    .gauge-high {
+      background: var(--color-success-glow);
+      color: var(--color-success);
+      border: 2px solid var(--color-success);
+    }
+    
+    .gauge-low {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--color-danger);
+      border: 2px solid var(--color-danger);
+    }
+    
+    .progress-bar-container {
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      height: 16px;
+      position: relative;
+      overflow: hidden;
+      margin: 1.5rem 0;
+    }
+    
+    .progress-bar-fill {
+      background: linear-gradient(90deg, var(--color-primary), #A78BFA);
+      height: 100%;
+      width: 0%;
+      transition: width 0.2s ease;
+    }
+    
+    /* Loading and Ingestion states */
+    .loading-pane {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem;
+      text-align: center;
+    }
+    
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--color-primary);
+      border-radius: 50%;
+      animation: spin 1s infinite linear;
+      margin-bottom: 1.5rem;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Costing Slider */
+    .slider-box {
+      background: var(--bg-input);
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      margin: 1.5rem 0;
+    }
+    
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    
+    .markup-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: 5px;
+      background: var(--border-color);
+      outline: none;
+      cursor: pointer;
+    }
+    
+    .markup-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--color-primary);
+      cursor: pointer;
+      box-shadow: 0 0 8px var(--color-primary);
+    }
+    
+    /* Excel download card */
+    .excel-download-card {
+      background: linear-gradient(135deg, rgba(31, 42, 69, 0.8), rgba(22, 30, 49, 0.8));
+      border: 2px dashed var(--color-success);
+      padding: 2rem;
+      border-radius: 12px;
+      text-align: center;
+      margin: 2rem 0;
+    }
+    
+    .excel-icon {
+      font-size: 3rem;
+      color: var(--color-success);
+      margin-bottom: 1rem;
+    }
+    
+    /* Console Log terminal mock */
+    .console-log {
+      background: #05070C;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 12px;
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: #34D399;
+      height: 120px;
+      overflow-y: auto;
+      margin-top: 1rem;
+      text-align: left;
+    }
+    
+    /* Tab headers for sample selection */
+    .sample-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .sample-card {
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.25rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    
+    .sample-card:hover {
+      border-color: var(--color-primary);
+      transform: translateY(-2px);
+    }
+    
+    .sample-card.selected {
+      border-color: var(--color-primary);
+      background: var(--color-primary-glow);
+      box-shadow: 0 0 10px var(--color-primary-glow);
+    }
+    
+    .sample-title {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 5px;
+    }
+    
+    .sample-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+    
+    .sample-badge {
+      align-self: flex-start;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    
+    .badge-review {
+      background: var(--color-success-glow);
+      color: var(--color-success);
+    }
+    
+    .badge-escalate {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--color-danger);
+    }
+    
+    .or-divider {
+      text-align: center;
+      margin: 1.5rem 0;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      position: relative;
+    }
+    
+    .or-divider::before, .or-divider::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 42%;
+      height: 1px;
+      background: var(--border-color);
+    }
+    
+    .or-divider::before { left: 0; }
+    .or-divider::after { right: 0; }
+    
+    /* Email preview composer */
+    .email-composer {
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    
+    .email-field {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+      padding: 8px 0;
+      font-size: 0.85rem;
+    }
+    
+    .email-label {
+      width: 80px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand-logo">
+      <span>UiPath Maestro</span> Portal
+      <div class="logo-badge">CASE WORKFLOW</div>
+    </div>
+    
+    <div class="status-panel">
+      <div class="status-item">
+        <span class="status-dot"></span>
+        <span>FastAPI Server: <b>Online</b></span>
+      </div>
+      <div class="status-item" id="gemini-status">
+        <span class="status-dot" style="background-color: var(--color-warning); box-shadow: 0 0 8px var(--color-warning);"></span>
+        <span>Gemini: Loading...</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-container">
+    
+    <!-- Sidebar Steps -->
+    <div class="sidebar">
+      <div class="sidebar-title">Maestro Pipeline</div>
+      <div class="step-list">
+        <div class="step-item active" id="step-0-nav">
+          <div class="step-number">0</div>
+          <div class="step-label">Case Intake</div>
+        </div>
+        <div class="step-item" id="step-1-nav">
+          <div class="step-number">1</div>
+          <div class="step-label">AI Extraction</div>
+        </div>
+        <div class="step-item" id="step-2-nav">
+          <div class="step-number">2</div>
+          <div class="step-label">Human Review</div>
+        </div>
+        <div class="step-item" id="step-3-nav">
+          <div class="step-number">3</div>
+          <div class="step-label">Costing & Margins</div>
+        </div>
+        <div class="step-item" id="step-4-nav">
+          <div class="step-number">4</div>
+          <div class="step-label">Output & Delivery</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main Panel Container -->
+    <div class="main-panel">
+      
+      <!-- STAGE 0: CASE INTAKE -->
+      <div class="stage-card active" id="card-stage-0">
+        <h2>Case Intake Simulation</h2>
+        <div class="subtitle">Select a pre-compiled tech pack PDF representing standard and exception cases to ingest into the Maestro queue, or upload a custom file.</div>
+        
+        <div class="sample-grid">
+          <div class="sample-card selected" id="sample-polo-card" onclick="selectSample('polo')">
+            <div>
+              <div class="sample-title">Classic Polo Shirt (Clean)</div>
+              <div class="sample-desc">Complete measurements and BOM spec. Evaluates to high AI confidence, advancing straight to standard Human Review.</div>
+            </div>
+            <div class="sample-badge badge-review">Success Flow</div>
+          </div>
+          
+          <div class="sample-card" id="sample-tee-card" onclick="selectSample('tee')">
+            <div>
+              <div class="sample-title">Essential Crewneck Tee (Messy)</div>
+              <div class="sample-desc">Missing fabric weight (GSM) and incomplete BOM. Evaluates to low AI confidence (<0.70), triggering high-priority escalation.</div>
+            </div>
+            <div class="sample-badge badge-escalate">Exception Flow</div>
+          </div>
+        </div>
+        
+        <div class="or-divider">OR UPLOAD CUSTOM FILE</div>
+        
+        <div class="form-group" style="background: rgba(31, 42, 69, 0.4); padding: 1.5rem; border-radius: 8px; border: 1px dashed var(--border-color); text-align: center;">
+          <input type="file" id="custom-file-input" style="display: none;" onchange="handleCustomFileUpload(event)" accept=".pdf">
+          <button class="btn" onclick="document.getElementById('custom-file-input').click()">Choose PDF Document</button>
+          <div id="file-upload-status" style="margin-top: 10px; font-size: 0.8rem; color: var(--text-muted);">No file uploaded</div>
+        </div>
+        
+        <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
+          <button class="btn btn-primary" id="btn-ingest" onclick="triggerIngestion()">Create Maestro Case & Ingest</button>
+        </div>
+      </div>
+      
+      <!-- LOADING SPINNER PANE -->
+      <div class="stage-card" id="card-loading">
+        <div class="loading-pane">
+          <div class="spinner"></div>
+          <h3 id="loading-title">Processing Ingestion...</h3>
+          <div class="progress-bar-container" style="width: 100%; max-width: 500px;">
+            <div class="progress-bar-fill" id="loading-progress"></div>
+          </div>
+          <div class="console-log" id="console-terminal"></div>
+        </div>
+      </div>
+      
+      <!-- STAGE 1: AI EXTRACTION -->
+      <div class="stage-card" id="card-stage-1">
+        <h2>AI Extraction Results (Gemini API)</h2>
+        <div class="subtitle">Google Gemini has completed parsing the raw PDF file. It compiled specifications into structured JSON and calculated a confidence metric.</div>
+        
+        <div class="confidence-gauge">
+          <div class="gauge-circle" id="extraction-gauge-circle">88%</div>
+          <div>
+            <div style="font-weight: 600; font-size: 0.95rem;">Extraction Confidence Metric</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);" id="extraction-route-verdict">Sufficient confidence. Case routed to normal review.</div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Structured Extraction Output (JSON)</label>
+          <textarea id="json-raw-display" rows="12" readonly style="font-family: monospace; font-size: 0.75rem; color: #34D399;"></textarea>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem;">
+          <div id="esclation-warning-badge" style="font-weight: 600; font-size: 0.85rem; color: var(--color-danger); display: flex; align-items: center; gap: 6px;"></div>
+          <button class="btn btn-primary" id="btn-to-review" onclick="goToReview()">Open Action Center Review Form</button>
+        </div>
+      </div>
+      
+      <!-- STAGE 2: HUMAN REVIEW SPLIT SCREEN -->
+      <div class="stage-card" id="card-stage-2" style="max-width: 1200px;">
+        <h2>UiPath Action Center - Merchandiser Review</h2>
+        <div class="subtitle">Verify and edit extracted values side-by-side with the raw parsed text content. Green approves and routes to costing, Red sends RFI.</div>
+        
+        <div class="splitscreen-container">
+          
+          <!-- Left: Parsed Text -->
+          <div class="pdf-viewer-pane" id="raw-text-viewer"></div>
+          
+          <!-- Right: Editable Form -->
+          <div class="form-editor-pane">
+            <div style="background: rgba(31, 42, 69, 0.4); padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem; display: flex; justify-content: space-between;">
+              <span>Case ID: <b id="form-case-id">N/A</b></span>
+              <span>Review Priority: <b id="form-priority">Normal</b></span>
+            </div>
+            
+            <div style="font-weight: 600; font-size: 0.9rem; margin-top: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Basic Garment Information</div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div class="form-group">
+                <label>Style Name</label>
+                <input type="text" id="inp-style-name">
+              </div>
+              <div class="form-group">
+                <label>Style Number</label>
+                <input type="text" id="inp-style-number">
+              </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+              <div class="form-group">
+                <label>Garment Type</label>
+                <select id="inp-garment-type">
+                  <option value="T-shirt">T-shirt</option>
+                  <option value="Polo Shirt">Polo Shirt</option>
+                  <option value="Shirt">Shirt</option>
+                  <option value="Dress">Dress</option>
+                  <option value="Jacket">Jacket</option>
+                  <option value="Pants">Pants</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Fabric GSM</label>
+                <input type="number" id="inp-fabric-gsm">
+              </div>
+              <div class="form-group">
+                <label>Fabric Width (in)</label>
+                <input type="number" id="inp-fabric-width">
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>Fabric Composition</label>
+              <input type="text" id="inp-fabric-composition">
+            </div>
+            
+            <div class="form-group">
+              <label>Size Range</label>
+              <input type="text" id="inp-size-range" readonly>
+            </div>
+            
+            <!-- Measurements Editor Grid -->
+            <div style="font-weight: 600; font-size: 0.9rem; margin-top: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Measurements Specifications (inches)</div>
+            <div class="table-container">
+              <table id="tbl-measurements">
+                <thead>
+                  <tr>
+                    <th>Size</th>
+                    <th>Chest Width</th>
+                    <th>Body Length</th>
+                    <th>Sleeve Length</th>
+                    <th>Shoulder Width</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Filled dynamically -->
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- BOM Editor Grid -->
+            <div style="font-weight: 600; font-size: 0.9rem; margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
+              <span>Bill of Materials (BOM)</span>
+              <button class="btn" style="padding: 2px 8px; font-size: 0.75rem;" onclick="addBOMRow()">+ Add Row</button>
+            </div>
+            <div class="table-container">
+              <table id="tbl-bom">
+                <thead>
+                  <tr>
+                    <th>Material Item</th>
+                    <th style="width: 100px;">Unit</th>
+                    <th style="width: 120px;">Consumption</th>
+                    <th style="width: 50px; text-align: center;">Del</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Filled dynamically -->
+                </tbody>
+              </table>
+            </div>
+            
+            <div style="font-weight: 600; font-size: 0.9rem; margin-top: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Clarification Questions for RFI Email</div>
+            <div class="form-group">
+              <label>Questions generated by AI or edited by Merchandiser</label>
+              <textarea id="inp-clarification-questions" rows="4"></textarea>
+            </div>
+            
+          </div>
+          
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; margin-top: 2rem;">
+          <button class="btn btn-danger" id="btn-reject-rfi" onclick="triggerRFI()">Reject & Send RFI</button>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn" onclick="saveDraft()">Save as Draft</button>
+            <button class="btn btn-success" id="btn-approve-review" onclick="approveReview()">Approve & Calculate Costing</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- STAGE 3: COSTING AGENT -->
+      <div class="stage-card" id="card-stage-3">
+        <h2>Costing Analysis Dashboard</h2>
+        <div class="subtitle">Geometric consumption math calculates fabric layout requirements. Customize factory markup margins to negotiate final FOB prices in real time.</div>
+        
+        <!-- Live Markup Calculator Box -->
+        <div class="slider-box">
+          <div class="slider-header">
+            <span>Factory Markup Margin</span>
+            <span id="lbl-markup-percent" style="color: var(--color-primary); font-size: 1.2rem;">15%</span>
+          </div>
+          <input type="range" class="markup-slider" id="markup-slider-input" min="5" max="50" value="15" oninput="recalculateFOB(this.value)">
+          <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.75rem; color: var(--text-muted);">
+            <span>5% (Low Margin)</span>
+            <span>25% (Standard)</span>
+            <span>50% (Premium)</span>
+          </div>
+        </div>
+        
+        <!-- Costing Breakdown split grid -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 2rem 0;">
+          
+          <div>
+            <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px;">
+              <span style="color: var(--color-primary);">✔</span> Geometric Fabric Consumption
+            </div>
+            <table style="border: 1px solid var(--border-color); border-radius: 6px;">
+              <tr>
+                <td style="font-weight: 600; width: 60%;">Garment Baseline Consumption</td>
+                <td id="cost-fab-consumption" style="text-align: right;">1.98 yards/pc</td>
+              </tr>
+              <tr>
+                <td style="font-weight: 600;">Fabric Width Allowance</td>
+                <td id="cost-fab-width" style="text-align: right;">60 inches</td>
+              </tr>
+              <tr>
+                <td style="font-weight: 600;">Complexity Factor</td>
+                <td id="cost-complexity-factor" style="text-align: right;">Polo Shirt (1.15)</td>
+              </tr>
+            </table>
+            
+            <div style="font-weight: 600; font-size: 0.95rem; margin-top: 1.5rem; margin-bottom: 0.75rem;">
+              Order Quantity Distribution
+            </div>
+            <table id="tbl-costing-quantities" style="border: 1px solid var(--border-color); border-radius: 6px;">
+              <!-- Filled dynamically -->
+            </table>
+          </div>
+          
+          <div>
+            <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px;">
+              <span style="color: var(--color-primary);">✔</span> FOB Quotation Summary
+            </div>
+            <table style="border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem;">
+              <tr>
+                <td style="font-weight: 600;">Total Raw Material Cost</td>
+                <td id="cost-materials" style="text-align: right;">$14.14</td>
+              </tr>
+              <tr>
+                <td style="font-weight: 600;">CMT Cost (Cut-Make-Trim)</td>
+                <td id="cost-cmt" style="text-align: right;">$3.20</td>
+              </tr>
+              <tr style="background: rgba(31, 42, 69, 0.4);">
+                <td style="font-weight: 600;">Factory Cost (Excl. Markup)</td>
+                <td id="cost-factory" style="text-align: right;">$17.34</td>
+              </tr>
+              <tr>
+                <td style="font-weight: 600; color: var(--color-primary);">Calculated Markup Cost</td>
+                <td id="cost-markup" style="text-align: right; color: var(--color-primary); font-weight: 600;">$2.60</td>
+              </tr>
+              <tr style="background: var(--color-success-glow);">
+                <td style="font-weight: 700; color: var(--color-success); font-size: 1rem;">Final FOB Price / Piece</td>
+                <td id="cost-fob" style="text-align: right; color: var(--color-success); font-weight: 700; font-size: 1rem;">$19.94</td>
+              </tr>
+              <tr style="border-top: 2px solid var(--border-color);">
+                <td style="font-weight: 700; font-size: 1.05rem;">Total Contract Value</td>
+                <td id="cost-contract-value" style="text-align: right; font-weight: 700; font-size: 1.05rem; color: #A78BFA;">$89,730.00</td>
+              </tr>
+            </table>
+          </div>
+          
+        </div>
+        
+        <div style="display: flex; justify-content: flex-end; margin-top: 2rem;">
+          <button class="btn btn-primary" id="btn-generate-report" onclick="finalizeCosting()">Generate Styled Excel Report</button>
+        </div>
+      </div>
+      
+      <!-- STAGE 4: OUTPUT & DELIVERY -->
+      <div class="stage-card" id="card-stage-4">
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <span style="font-size: 4rem;">🎉</span>
+          <h2 style="justify-content: center; margin-top: 10px;">Maestro Case Completed Successfully!</h2>
+          <div class="subtitle" style="margin-bottom: 0;">Case status: <b>CLOSED</b>. The exporter workflow has generated the costing results.</div>
+        </div>
+        
+        <div class="excel-download-card">
+          <div class="excel-icon">📊</div>
+          <h3>Costing Spreadsheet Generated</h3>
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;" id="excel-filename-lbl">costing_sheet_TP-20260523-0001.xlsx</div>
+          <button class="btn btn-success" onclick="downloadExcelFile()">
+            📥 Download Styled Costing Sheet (Excel)
+          </button>
+        </div>
+        
+        <!-- Outbound Email Simulator -->
+        <div class="email-composer">
+          <div style="font-weight: 600; font-size: 0.95rem; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 8px;">
+            ✉ Outbound Client Email Dispatcher
+          </div>
+          <div class="email-field">
+            <div class="email-label">To:</div>
+            <div id="email-to-lbl">buyer@fashionbrand.com</div>
+          </div>
+          <div class="email-field">
+            <div class="email-label">Subject:</div>
+            <div id="email-subject-lbl">Tech Pack Costing Quotation Response - FB-2026-P001</div>
+          </div>
+          <div class="email-field">
+            <div class="email-label">Attach:</div>
+            <div style="color: var(--color-success); font-weight: 500;" id="email-attachment-lbl">costing_sheet_TP-20260523-0001.xlsx</div>
+          </div>
+          
+          <div style="margin-top: 15px; font-size: 0.85rem; line-height: 1.5; color: var(--text-muted); white-space: pre-wrap;" id="email-body-text">
+            Dear Buyer,
+            
+            We have completed the technical evaluation and costing matrix for Polo Shirt (Style: FB-2026-P001).
+            
+            Our calculated FOB price per piece is $19.94. 
+            Attached, please find our detailed sheet breakdown for materials, CMT, and order distributions.
+            
+            Best regards,
+            Merchandising Team
+          </div>
+          
+          <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
+            <button class="btn btn-primary" id="btn-send-email" onclick="simulateEmailSend()">Send Quote & Close Case</button>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script>
+    // State management
+    let activeStep = 0;
+    let selectedSample = 'polo';
+    let uploadedFilepath = null;
+    let uploadedFilename = null;
+    let caseId = "";
+    
+    // Core data caches loaded from endpoints
+    let apiData = null; 
+    let costingResult = null;
+    
+    // Check server connection on startup
+    window.addEventListener('load', async () => {
+      try {
+        const res = await fetch('/');
+        const data = await res.json();
+        
+        const geminiStatus = document.getElementById('gemini-status');
+        if (data.gemini_api_key_configured) {
+          geminiStatus.innerHTML = '<span class="status-dot"></span><span>Gemini API: <b>Active</b></span>';
+        } else {
+          geminiStatus.innerHTML = '<span class="status-dot" style="background-color: var(--color-warning); box-shadow: 0 0 8px var(--color-warning);"></span><span>Gemini API: <b>Mock Fallback</b></span>';
+        }
+      } catch (err) {
+        console.error("Failed to connect to backend:", err);
+      }
+    });
+    
+    function selectSample(type) {
+      selectedSample = type;
+      document.getElementById('sample-polo-card').classList.toggle('selected', type === 'polo');
+      document.getElementById('sample-tee-card').classList.toggle('selected', type === 'tee');
+      
+      // Reset custom file details when selecting mock templates
+      uploadedFilepath = null;
+      uploadedFilename = null;
+      document.getElementById('file-upload-status').innerText = "No file uploaded";
+    }
+    
+    async function handleCustomFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      document.getElementById('file-upload-status').innerText = `Uploading: ${file.name}...`;
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.status === 'SUCCESS') {
+          uploadedFilepath = data.filepath;
+          uploadedFilename = data.filename;
+          document.getElementById('file-upload-status').innerText = `Uploaded: ${file.name}`;
+          
+          // Deselect sample cards
+          document.getElementById('sample-polo-card').classList.remove('selected');
+          document.getElementById('sample-tee-card').classList.remove('selected');
+        }
+      } catch (err) {
+        console.error("Upload error:", err);
+        document.getElementById('file-upload-status').innerText = "Upload failed. Try again.";
+      }
+    }
+    
+    function updateStepNav(step) {
+      activeStep = step;
+      for (let i = 0; i <= 4; i++) {
+        const nav = document.getElementById(`step-${i}-nav`);
+        nav.classList.toggle('active', i === step);
+        nav.classList.toggle('completed', i < step);
+      }
+    }
+    
+    function triggerIngestion() {
+      // Transition to loading pane
+      document.getElementById('card-stage-0').classList.remove('active');
+      const loadPane = document.getElementById('card-loading');
+      loadPane.classList.add('active');
+      
+      document.getElementById('loading-title').innerText = "Simulating Intake Robot (Stage 0)...";
+      const progress = document.getElementById('loading-progress');
+      const terminal = document.getElementById('console-terminal');
+      
+      progress.style.width = "0%";
+      terminal.innerHTML = "";
+      
+      // Generate randomized Case ID
+      const randId = Math.floor(1000 + Math.random() * 9000);
+      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+      caseId = `TP-${dateStr}-${randId}`;
+      
+      let logs = [
+        `[Intake] Monitoring inbound mailbox techpack-intake@yourcompany.com...`,
+        `[Intake] Received new message containing technical specification PDF.`,
+        `[Intake] Uploading PDF attachment to S3 file storage bucket...`,
+        `[Intake] Create new Maestro Case Card: ${caseId}`,
+        `[Intake] Case status set to INTAKE_COMPLETE. Transitioning case to Stage 1...`,
+        `[Stage 1] Triggering FastAPI /api/extract-techpack endpoint...`
+      ];
+      
+      let currentLogIdx = 0;
+      const interval = setInterval(() => {
+        if (currentLogIdx < logs.length) {
+          terminal.innerHTML += logs[currentLogIdx] + "<br>";
+          terminal.scrollTop = terminal.scrollHeight;
+          progress.style.width = `${((currentLogIdx + 1) / logs.length) * 45}%`;
+          currentLogIdx++;
+        } else {
+          clearInterval(interval);
+          // Now invoke actual PDF extraction endpoint
+          runExtraction(progress, terminal);
+        }
+      }, 700);
+    }
+    
+    async function runExtraction(progress, terminal) {
+      document.getElementById('loading-title').innerText = "Invoking Gemini AI Extraction Agent (Stage 1)...";
+      terminal.innerHTML += `[AI Agent] Reading PDF file, extracting text coordinates via pdfplumber...<br>`;
+      terminal.scrollTop = terminal.scrollHeight;
+      
+      // Select source path
+      let sourcePath = "";
+      if (uploadedFilepath) {
+        sourcePath = uploadedFilepath;
+      } else {
+        sourcePath = selectedSample === 'polo' ? '../sample-data/sample_techpack_1.pdf' : '../sample-data/sample_techpack_2.pdf';
+      }
+      
+      try {
+        const response = await fetch('/api/extract-techpack', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            case_id: caseId,
+            pdf_url: sourcePath
+          })
+        });
+        
+        const resData = await response.json();
+        apiData = resData;
+        
+        terminal.innerHTML += `[Gemini API] Query dispatched. Generating structured garment JSON representation...<br>`;
+        terminal.innerHTML += `[AI Agent] Extraction complete. Confidence metric calculated.<br>`;
+        terminal.scrollTop = terminal.scrollHeight;
+        progress.style.width = "100%";
+        
+        setTimeout(() => {
+          // Transition to Stage 1 Display
+          document.getElementById('card-loading').classList.remove('active');
+          document.getElementById('card-stage-1').classList.add('active');
+          updateStepNav(1);
+          
+          displayExtractionResults();
+        }, 1000);
+        
+      } catch (err) {
+        terminal.innerHTML += `<span style="color: var(--color-danger)">[ERROR] API extraction failed: ${err}</span><br>`;
+      }
+    }
+    
+    function displayExtractionResults() {
+      // JSON format display
+      document.getElementById('json-raw-display').value = JSON.stringify(apiData, null, 2);
+      
+      const pct = Math.round(apiData.confidence_score * 100);
+      const gauge = document.getElementById('extraction-gauge-circle');
+      gauge.innerText = `${pct}%`;
+      
+      const verdict = document.getElementById('extraction-route-verdict');
+      const warning = document.getElementById('esclation-warning-badge');
+      const btn = document.getElementById('btn-to-review');
+      
+      if (apiData.confidence_score >= 0.70) {
+        gauge.className = "gauge-circle gauge-high";
+        verdict.innerHTML = `Sufficient confidence score (<b>${pct}%</b>). System routed case to standard <b>Action Center Form Review</b>.`;
+        warning.innerHTML = "";
+        btn.innerText = "Open Action Center Review Form";
+        btn.className = "btn btn-primary";
+      } else {
+        gauge.className = "gauge-circle gauge-low";
+        verdict.innerHTML = `Low confidence score (<b>${pct}%</b>). System triggered <b>High-Priority Human Escalation Exception</b>.`;
+        warning.innerHTML = "⚠ HIGH PRIORITY EXCEPTION: Requires manual input verification.";
+        btn.innerText = "Open Escalated Exception Form";
+        btn.className = "btn btn-danger";
+      }
+    }
+    
+    function goToReview() {
+      document.getElementById('card-stage-1').classList.remove('active');
+      document.getElementById('card-stage-2').classList.add('active');
+      updateStepNav(2);
+      
+      // Load raw text mock comparison
+      loadSplitscreenText();
+      
+      // Load form fields
+      loadFormFields();
+    }
+    
+    function loadSplitscreenText() {
+      const viewer = document.getElementById('raw-text-viewer');
+      if (uploadedFilename) {
+        viewer.innerText = `[Custom PDF File: ${uploadedFilename}]\nRaw coordinates and text segments loaded. Comparing extracted models.`;
+        return;
+      }
+      
+      if (selectedSample === 'polo') {
+        viewer.innerText = `
+TECHNICAL SPECIFICATION SHEET - TECH PACK
+Buyer: Fashion Brand Ltd    Brand Reference: FB-2026
+Style Name: Classic Polo Shirt     Style Number: FB-2026-P001
+Garment Type: Polo Shirt          Date Created: 2026-05-20
+
+1. FABRIC SPECIFICATIONS
+Fabric Composition: 100% Cotton Pique
+Fabric Weight: 200 GSM
+Cuttable Fabric Width: 60 inches cut-to-cut
+Colorways: White, Navy, Black, Red
+Size Range: S, M, L, XL
+
+2. SIZE SPECIFICATION & MEASUREMENTS TABLE (inches)
+Chest Width: S: 38.0, M: 40.0, L: 42.0, XL: 44.0
+Body Length: S: 27.0, M: 28.0, L: 29.0, XL: 30.0
+Sleeve Length: S: 8.0, M: 8.5, L: 9.0, XL: 9.5
+Shoulder Width: S: 16.0, M: 17.0, L: 18.0, XL: 19.0
+
+3. BILL OF MATERIALS (BOM) DETAILS
+- Main fabric - Cotton Pique (yards) - 1.80
+- Rib fabric - collar/cuffs (yards) - 0.30
+- Interlining - collar (yards) - 0.15
+- Thread - main (meters) - 180.0
+- Buttons - 3 hole (pieces) - 3.00
+- Care label (pieces) - 1.00
+- Size label (pieces) - 1.00
+
+4. CONSTRUCTION DETAILS
+Seam Type: French seam on side seams, overlock on sleeves.
+Stitch Density: 12-14 SPI lockstitch
+Special Processes: Bio-Enzyme wash. Silicon softener.
+        `;
+      } else {
+        viewer.innerText = `
+TECHNICAL SPECIFICATION SHEET - STYLE BRIEF
+Buyer: Fashion Brand Ltd    Brand Reference: FB-2026
+Style Name: Essential Crewneck Tee     Style Number: FB-2026-T002
+Garment Type: T-shirt          Date Created: 2026-05-20
+
+1. GENERAL BRIEF
+Fabric: Poly-Cotton Blend Jersey (65% Polyester, 35% Cotton)
+Weight / GSM: GSM details not specified in client worksheet.
+Width: 58 inches width
+Colorways: Heather Gray, Charcoal, Olive (Pantone standards pending)
+Sizes: S, M, L
+
+2. SPEC MEASUREMENTS TABLE (inches)
+Chest Width: S: 36.0, M: 38.0, L: 40.0
+Body Length: S: 26.0, M: 27.0, L: 28.0
+Sleeve Length: S: 7.5, M: 8.0, L: 8.5
+Shoulder: S: 15.5, M: 16.5, L: 17.5
+
+3. BILL OF MATERIALS
+- Main fabric - Poly Cotton Blend (yards) - 1.40
+- Thread - main (meters) - 120.0
+- Care label (pieces) - 1.00
+
+4. ASSEMBLY METHODS
+Seam Type: Overlock stitch on main panels.
+Stitch Density: 10-12 SPI
+Special Treatments: None specified.
+        `;
+      }
+    }
+    
+    function loadFormFields() {
+      const g = apiData.data;
+      
+      document.getElementById('form-case-id').innerText = caseId;
+      document.getElementById('form-priority').innerText = apiData.confidence_score >= 0.70 ? "Normal" : "High (Escalated)";
+      document.getElementById('form-priority').style.color = apiData.confidence_score >= 0.70 ? "var(--color-success)" : "var(--color-danger)";
+      
+      document.getElementById('inp-style-name').value = g.style_name || "";
+      document.getElementById('inp-style-number').value = g.style_number || "";
+      document.getElementById('inp-garment-type').value = g.garment_type || "T-shirt";
+      document.getElementById('inp-fabric-gsm').value = g.fabric_gsm || "";
+      document.getElementById('inp-fabric-width').value = g.fabric_width || 60;
+      document.getElementById('inp-fabric-composition').value = g.fabric_composition || "";
+      document.getElementById('inp-size-range').value = g.size_range || "S, M, L, XL";
+      
+      // Load measurements grid
+      const tbodyMeas = document.querySelector('#tbl-measurements tbody');
+      tbodyMeas.innerHTML = "";
+      
+      // Determine sizes
+      const sizes = Object.keys(g.measurements.chest || {"S":0, "M":0, "L":0});
+      sizes.forEach(size => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-weight: 600; text-align: center;">${size}</td>
+          <td><input type="number" step="0.1" class="tbl-meas-chest" data-size="${size}" value="${g.measurements.chest[size] || 0}"></td>
+          <td><input type="number" step="0.1" class="tbl-meas-length" data-size="${size}" value="${g.measurements.length[size] || 0}"></td>
+          <td><input type="number" step="0.1" class="tbl-meas-sleeve" data-size="${size}" value="${g.measurements.sleeve[size] || 0}"></td>
+          <td><input type="number" step="0.1" class="tbl-meas-shoulder" data-size="${size}" value="${g.measurements.shoulder ? (g.measurements.shoulder[size] || 0) : 0}"></td>
+        `;
+        tbodyMeas.appendChild(tr);
+      });
+      
+      // Load BOM grid
+      const tbodyBOM = document.querySelector('#tbl-bom tbody');
+      tbodyBOM.innerHTML = "";
+      g.bill_of_materials.forEach((bom, idx) => {
+        appendBOMRowData(bom.item, bom.unit, bom.consumption_per_piece);
+      });
+      
+      // RFI questions text
+      document.getElementById('inp-clarification-questions').value = g.clarification_questions.join("\n");
+    }
+    
+    function appendBOMRowData(item = "", unit = "", cons = 0.0) {
+      const tbody = document.querySelector('#tbl-bom tbody');
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="text" class="bom-item-name" value="${item}"></td>
+        <td><input type="text" class="bom-item-unit" value="${unit}" style="text-align: center;"></td>
+        <td><input type="number" step="0.01" class="bom-item-cons" value="${cons}" style="text-align: center;"></td>
+        <td style="text-align: center; color: var(--color-danger); cursor: pointer; font-size: 1.1rem;" onclick="this.closest('tr').remove()">🗑</td>
+      `;
+      tbody.appendChild(tr);
+    }
+    
+    function addBOMRow() {
+      appendBOMRowData("New trim/material item", "pieces", 1.0);
+    }
+    
+    function saveDraft() {
+      alert("Draft changes saved locally inside Maestro cache folder.");
+    }
+    
+    async function triggerRFI() {
+      const qText = document.getElementById('inp-clarification-questions').value;
+      const questions = qText.split("\n").filter(q => q.trim().length > 0);
+      
+      if (questions.length === 0) {
+        alert("Please specify at least one clarification question to reject and send RFI.");
+        return;
+      }
+      
+      // Route to Outbox Simulation, set RFI mode
+      document.getElementById('card-stage-2').classList.remove('active');
+      document.getElementById('card-stage-4').classList.add('active');
+      updateStepNav(4);
+      
+      // Setup RFI Email Layout
+      document.getElementById('excel-filename-lbl').style.textDecoration = "line-through";
+      document.getElementById('excel-filename-lbl').innerText = "Excel Costing Sheet (Canceled - Pending RFI)";
+      
+      document.getElementById('email-to-lbl').innerText = apiData.data.buyer_email || "buyer@fashionbrand.com";
+      document.getElementById('email-subject-lbl').innerText = `RFI Request: Clarifications Needed - Style: ${document.getElementById('inp-style-number').value}`;
+      document.getElementById('email-attachment-lbl').innerText = "None (Proposal Suspended)";
+      document.getElementById('email-attachment-lbl').style.color = "var(--color-danger)";
+      
+      let qList = questions.map((q, idx) => `${idx + 1}. ${q}`).join("\n");
+      document.getElementById('email-body-text').innerText = `
+Dear Exporter Client,
+
+We have completed the technical brief audit on your tech pack for ${document.getElementById('inp-style-name').value} (${document.getElementById('inp-style-number').value}).
+
+Before our costing engine can submit final FOB calculations, we require clarification on the following details:
+
+${qList}
+
+Please reply with the updated specifications at your earliest convenience.
+
+Best regards,
+Merchandising Team
+      `;
+      
+      document.getElementById('btn-send-email').innerText = "Send RFI Email & Suspend Case";
+      document.getElementById('btn-send-email').className = "btn btn-danger";
+    }
+    
+    async function approveReview() {
+      // Package Form Data back to request schema
+      const measurements = {
+        chest: {},
+        length: {},
+        sleeve: {},
+        shoulder: {}
+      };
+      
+      // Gather measurements
+      document.querySelectorAll('.tbl-meas-chest').forEach(el => {
+        measurements.chest[el.dataset.size] = parseFloat(el.value);
+      });
+      document.querySelectorAll('.tbl-meas-length').forEach(el => {
+        measurements.length[el.dataset.size] = parseFloat(el.value);
+      });
+      document.querySelectorAll('.tbl-meas-sleeve').forEach(el => {
+        measurements.sleeve[el.dataset.size] = parseFloat(el.value);
+      });
+      document.querySelectorAll('.tbl-meas-shoulder').forEach(el => {
+        measurements.shoulder[el.dataset.size] = parseFloat(el.value);
+      });
+      
+      // Gather BOM
+      const bill_of_materials = [];
+      const trs = document.querySelectorAll('#tbl-bom tbody tr');
+      trs.forEach(tr => {
+        const item = tr.querySelector('.bom-item-name').value;
+        const unit = tr.querySelector('.bom-item-unit').value;
+        const cons = parseFloat(tr.querySelector('.bom-item-cons').value);
+        if (item.trim()) {
+          bill_of_materials.push({
+            item: item,
+            unit: unit,
+            consumption_per_piece: cons
+          });
+        }
+      });
+      
+      // Set Quantity based on size tags
+      const order_quantity = {};
+      Object.keys(measurements.chest).forEach(size => {
+        // default distribution
+        const defaults = {"S": 1000, "M": 1500, "L": 1200, "XL": 800};
+        order_quantity[size] = defaults[size] || 1000;
+      });
+      
+      const payload = {
+        case_id: caseId,
+        style_data: {
+          style_name: document.getElementById('inp-style-name').value,
+          style_number: document.getElementById('inp-style-number').value,
+          garment_type: document.getElementById('inp-garment-type').value,
+          fabric_composition: document.getElementById('inp-fabric-composition').value,
+          fabric_gsm: parseFloat(document.getElementById('inp-fabric-gsm').value) || null,
+          fabric_width: parseFloat(document.getElementById('inp-fabric-width').value) || 60.0,
+          measurements: measurements,
+          bill_of_materials: bill_of_materials
+        },
+        order_quantity: order_quantity,
+        markup_percentage: parseFloat(document.getElementById('markup-slider-input').value) / 100
+      };
+      
+      // Call costing API
+      try {
+        // loading state
+        document.getElementById('card-stage-2').classList.remove('active');
+        document.getElementById('card-loading').classList.add('active');
+        document.getElementById('loading-title').innerText = "Invoking Costing Agent & Geometric Formula (Stage 3)...";
+        document.getElementById('loading-progress').style.width = "50%";
+        document.getElementById('console-terminal').innerHTML = `[Costing Agent] Dispatched approved review model for Case ID ${caseId}...<br>[Costing Agent] Calculating main fabric geometric allowance...<br>`;
+        
+        const res = await fetch('/api/calculate-costing', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        
+        if (!res.ok) {
+          throw new Error(data.detail || "Unknown backend error");
+        }
+        
+        costingResult = data;
+        
+        document.getElementById('loading-progress').style.width = "100%";
+        document.getElementById('console-terminal').innerHTML += `[Costing Agent] Sourced rates from local catalogs.<br>[Costing Agent] Costing matrix generated successfully. Excel exported.`;
+        
+        setTimeout(() => {
+          document.getElementById('card-loading').classList.remove('active');
+          document.getElementById('card-stage-3').classList.add('active');
+          updateStepNav(3);
+          
+          displayCostingResults();
+        }, 1000);
+        
+      } catch (err) {
+        document.getElementById('card-loading').classList.remove('active');
+        document.getElementById('card-stage-2').classList.add('active');
+        alert("Costing request failed: " + err);
+      }
+    }
+    
+    function displayCostingResults() {
+      const sheet = costingResult.costing_sheet;
+      
+      document.getElementById('cost-fab-consumption').innerText = `${sheet.fabric_consumption.main_fabric_yards_per_piece} yards/pc`;
+      document.getElementById('cost-fab-width').innerText = `${sheet.fabric_consumption.fabric_width_inches} inches`;
+      document.getElementById('cost-complexity-factor').innerText = `${sheet.fabric_consumption.garment_type_factor} (calibrated)`;
+      
+      // Cost values
+      document.getElementById('cost-materials').innerText = `$${sheet.total_material_cost.toFixed(2)}`;
+      document.getElementById('cost-cmt').innerText = `$${sheet.cmt_cost.toFixed(2)}`;
+      document.getElementById('cost-factory').innerText = `$${sheet.factory_cost_per_piece.toFixed(2)}`;
+      
+      // Set slider default value to loaded value
+      document.getElementById('markup-slider-input').value = sheet.markup_percentage;
+      recalculateFOB(sheet.markup_percentage);
+      
+      // Quantities distribution grid
+      const tblQty = document.getElementById('tbl-costing-quantities');
+      tblQty.innerHTML = "<tr><th>Size Tag</th><th style='text-align: right;'>Quantity (pcs)</th></tr>";
+      
+      Object.keys(sheet.order_quantity).forEach(key => {
+        if (key === 'total') return;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-weight: 600;">Size ${key}</td>
+          <td style="text-align: right;">${sheet.order_quantity[key].toLocaleString()} pcs</td>
+        `;
+        tblQty.appendChild(tr);
+      });
+      const trTot = document.createElement('tr');
+      trTot.style.background = "rgba(31, 42, 69, 0.4)";
+      trTot.innerHTML = `
+        <td style="font-weight: 700;">Total Quantity</td>
+        <td style="text-align: right; font-weight: 700; color: var(--color-success);">${sheet.order_quantity.total.toLocaleString()} pcs</td>
+      `;
+      tblQty.appendChild(trTot);
+    }
+    
+    // Live interactive markup slider formula recalculation
+    function recalculateFOB(markupVal) {
+      document.getElementById('lbl-markup-percent').innerText = `${markupVal}%`;
+      
+      const factoryCost = parseFloat(document.getElementById('cost-factory').innerText.replace('$', ''));
+      const markupCost = roundToTwo(factoryCost * (markupVal / 100));
+      const fobPrice = roundToTwo(factoryCost + markupCost);
+      
+      document.getElementById('cost-markup').innerText = `$${markupCost.toFixed(2)}`;
+      document.getElementById('cost-fob').innerText = `$${fobPrice.toFixed(2)}`;
+      
+      // Recalculate contract total
+      const totalQty = costingResult.costing_sheet.order_quantity.total;
+      const contractVal = roundToTwo(fobPrice * totalQty);
+      document.getElementById('cost-contract-value').innerText = `$${contractVal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      
+      // Update result structure values so excel reports match the slider adjustment
+      costingResult.costing_sheet.markup_percentage = parseInt(markupVal);
+      costingResult.costing_sheet.fob_price_per_piece = fobPrice;
+      costingResult.costing_sheet.total_order_value = contractVal;
+    }
+    
+    function roundToTwo(num) {
+      return +(Math.round(num + "e+2")  + "e-2");
+    }
+    
+    async function finalizeCosting() {
+      // Re-trigger Excel generation with adjusted markup on backend
+      try {
+        document.getElementById('card-stage-3').classList.remove('active');
+        document.getElementById('card-loading').classList.add('active');
+        document.getElementById('loading-title').innerText = "Regenerating Styled Excel Report Sheet...";
+        document.getElementById('loading-progress').style.width = "70%";
+        
+        // Re-post costing request with updated slider markup
+        const payload = {
+          case_id: caseId,
+          style_data: {
+            style_name: costingResult.costing_sheet.style_name,
+            style_number: costingResult.costing_sheet.style_number,
+            garment_type: costingResult.costing_sheet.fabric_consumption.garment_type_factor,
+            fabric_composition: document.getElementById('inp-fabric-composition').value,
+            fabric_width: costingResult.costing_sheet.fabric_consumption.fabric_width_inches,
+            measurements: apiData.data.measurements,
+            bill_of_materials: costingResult.costing_sheet.material_cost_breakdown.map(item => ({
+              item: item.item,
+              unit: item.unit,
+              consumption_per_piece: item.consumption
+            }))
+          },
+          order_quantity: costingResult.costing_sheet.order_quantity,
+          markup_percentage: parseFloat(document.getElementById('markup-slider-input').value) / 100
+        };
+        
+        // We call calculate costing endpoint again to overwrite excel with new slider settings
+        const res = await fetch('/api/calculate-costing', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        
+        const data = await res.json();
+        
+        if (!res.ok) {
+          throw new Error(data.detail || "Unknown backend error");
+        }
+        
+        costingResult = data;
+        
+        document.getElementById('loading-progress').style.width = "100%";
+        
+        setTimeout(() => {
+          document.getElementById('card-loading').classList.remove('active');
+          document.getElementById('card-stage-4').classList.add('active');
+          updateStepNav(4);
+          
+          displayOutputPane();
+        }, 1000);
+        
+      } catch (err) {
+        document.getElementById('card-loading').classList.remove('active');
+        document.getElementById('card-stage-3').classList.add('active');
+        alert("Failed to write updated Excel sheet: " + err);
+      }
+    }
+    
+    function displayOutputPane() {
+      const sheet = costingResult.costing_sheet;
+      
+      document.getElementById('excel-filename-lbl').style.textDecoration = "none";
+      document.getElementById('excel-filename-lbl').innerText = `costing_sheet_${caseId}.xlsx`;
+      
+      document.getElementById('email-to-lbl').innerText = apiData.data.buyer_email || "buyer@fashionbrand.com";
+      document.getElementById('email-subject-lbl').innerText = `Tech Pack Costing Quotation Response - Style: ${sheet.style_number}`;
+      document.getElementById('email-attachment-lbl').innerText = `costing_sheet_${caseId}.xlsx`;
+      document.getElementById('email-attachment-lbl').style.color = "var(--color-success)";
+      
+      document.getElementById('email-body-text').innerText = `
+Dear Buyer,
+
+We have successfully completed the technical evaluation and costing matrix for your garment style: ${sheet.style_name} (${sheet.style_number}).
+
+Our final calculated FOB Price per piece is: USD $${sheet.fob_price_per_piece.toFixed(2)}.
+The total contract value for ${sheet.order_quantity.total.toLocaleString()} pieces is: USD $${sheet.total_order_value.toLocaleString(undefined, {minimumFractionDigits: 2})}.
+
+Please find attached our comprehensive detail costing sheet outlining bill of materials, fabric consumption, and sizes.
+
+Best regards,
+Merchandising Team
+Indian Garment Exporters Ltd.
+      `;
+      
+      document.getElementById('btn-send-email').innerText = "Send Quote & Close Case";
+      document.getElementById('btn-send-email').className = "btn btn-primary btn-success";
+    }
+    
+    function downloadExcelFile() {
+      window.location.href = `/api/download-excel/${caseId}`;
+    }
+    
+    function simulateEmailSend() {
+      alert(`Outbound email successfully sent to ${document.getElementById('email-to-lbl').innerText}! Maestro case TP-${caseId} is now archived.`);
+      window.location.reload();
+    }
+  </script>
+</body>
+</html>
